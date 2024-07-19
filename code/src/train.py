@@ -45,7 +45,7 @@ def parse_args():
                         help='the model for training')
     parser.add_argument('--state_epoch', type=int, default=1, # 100
                         help='state epoch')
-    parser.add_argument('--batch_size', type=int, default=32, # 1024
+    parser.add_argument('--batch_size', type=int, default=64, # 1024
                         help='batch size')
     parser.add_argument('--train', type=str, default='True',
                         help='if train model')
