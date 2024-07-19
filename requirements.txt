@@ -1,7 +1,5 @@
 tqdm
 numpy
-torch==1.9.1
-torchvision
 easydict
 pandas
 jupyter
