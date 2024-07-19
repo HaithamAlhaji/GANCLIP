@@ -1,6 +1,6 @@
 CONFIG_NAME: 'bird'
 dataset_name: 'birds'
-data_dir: 'C:\Users\PC\Desktop\GALIP\data\birds'
+data_dir: 'data\birds'
 
 imsize: 256
 z_dim: 100
@@ -31,5 +31,5 @@ test_interval: 20 #5
 save_interval: 20
 
 sample_times: 12
-npz_path: 'C:\Users\PC\Desktop\GALIP\data\birds\npz\bird_val256_FIDK0.npz'
+npz_path: 'data\birds\npz\bird_val256_FIDK0.npz'
 log_dir: 'new'
