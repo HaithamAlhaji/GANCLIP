@@ -1,6 +1,9 @@
 # git clone https://github.com/HaithamAlhaji/GANCLIP.git
-# bash ./GANCLIP/code/scripts/init.sh
+# cd GANCLIP/
+# bash ./code/scripts/init.sh
 
+# git fetch --all
+# git reset --hard origin/main
 conda create --name myenv python=3.9
 conda activate myenv
 
