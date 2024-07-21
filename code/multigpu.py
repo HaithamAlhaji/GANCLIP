@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+import time
 
 # Check if multiple GPUs are available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -44,6 +45,7 @@ train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 # Training loop
 num_epochs = 5
 for epoch in range(num_epochs):
+    start_time = time.time()
     running_loss = 0.0
     for inputs, labels in train_loader:
         inputs, labels = inputs.to(device), labels.to(device)
@@ -56,6 +58,7 @@ for epoch in range(num_epochs):
         
         running_loss += loss.item()
     
-    print(f"Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}")
+    duration = time.time() - start_time
+    print(f"Epoch {epoch+1}, Loss: {running_loss/len(train_loader)}, Duration: {duration:.2f} seconds")
 
 print("Training completed.")
