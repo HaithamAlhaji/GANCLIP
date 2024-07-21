@@ -3,7 +3,7 @@
 # bash ./code/scripts/init.sh
 
 # git fetch --all
-# git reset --hard origin/main
+# git fetch --all && git reset --hard origin/main
 
 conda create --name myenv python=3.9 -y
 conda activate myenv
@@ -26,4 +26,4 @@ tar xvzf downloaded_files/birds.tgz -C data/birds
 
 python code/src/train.py --cfg code/cfg/birds.yml
 
-CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=11266 code/src/train.py --cfg code/cfg/birds.yml
+# CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=11266 code/src/train.py --cfg code/cfg/birds.yml
