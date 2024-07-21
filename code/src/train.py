@@ -33,7 +33,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Text2Img')
     parser.add_argument('--cfg', dest='cfg_file', type=str, default='code\\cfg\\birds.yml',
                         help='optional config file')
-    parser.add_argument('--num_workers', type=int, default=4,
+    parser.add_argument('--num_workers', type=int, default=4, #8
                         help='number of workers(default: {0})'.format(mp.cpu_count() - 1))
     parser.add_argument('--stamp', type=str, default='normal',
                         help='the stamp of model')
@@ -43,9 +43,9 @@ def parse_args():
                         help='file path to log directory')
     parser.add_argument('--model', type=str, default='GALIP',
                         help='the model for training')
-    parser.add_argument('--state_epoch', type=int, default=1, # 100
+    parser.add_argument('--state_epoch', type=int, default=0, # 100
                         help='state epoch')
-    parser.add_argument('--batch_size', type=int, default=64, # 1024
+    parser.add_argument('--batch_size', type=int, default=32, # 1024
                         help='batch size')
     parser.add_argument('--train', type=str, default='True',
                         help='if train model')
@@ -112,7 +112,7 @@ def main(args):
     m1, s1 = load_npz(args.npz_path)
     start_epoch = 1
     # load from checkpoint
-    if args.state_epoch!=1:
+    if args.state_epoch!=0: # args.state_epoch!=1:
         start_epoch = args.state_epoch + 1
         path = osp.join(args.pretrained_model_path, 'state_epoch_%03d.pth'%(args.state_epoch))
         netG, netD, netC, optimizerG, optimizerD = load_models_opt(netG, netD, netC, optimizerG, optimizerD, path, args.multi_gpus)

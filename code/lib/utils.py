@@ -84,7 +84,7 @@ def merge_args_yaml(args):
     if args.cfg_file is not None:
         opt = vars(args)
         args = load_yaml(args.cfg_file)
-        args.update(opt)
+        # args.update(opt)
         args = str2bool_dict(args)
         args = edict(args)
     return args

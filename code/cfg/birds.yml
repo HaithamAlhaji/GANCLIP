@@ -13,9 +13,9 @@ clip4trn: {'src':"clip", 'type':'ViT-B/32'}
 clip4text: {'src':"clip", 'type':'ViT-B/32'} 
 
 stamp: 'normal'
-state_epoch: 0
-max_epoch: 2 # 1502 defaults
-batch_size: 64
+state_epoch: 0 # 0 OR 1 for resume training
+max_epoch: 3 # 1502 defaults
+batch_size: 16
 gpu_id: 0
 nf: 64
 ch_size: 3
@@ -27,9 +27,16 @@ lr_d: 0.0004
 sim_w: 4.0
 
 gen_interval: 1 #1
-test_interval: 1 #5
+test_interval: 20 #5
 save_interval: 1 #20
 
 sample_times: 12
 npz_path: 'data/birds/npz/bird_val256_FIDK0.npz'
 log_dir: 'new'
+
+multi_gpus: False
+model: GALIP
+num_workers: 8 # 4
+local_rank: 1
+mixed_precision: False
+pretrained_model_path: code/saved_models/data/model_save_file
