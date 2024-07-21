@@ -26,9 +26,9 @@ class SimpleNet(nn.Module):
 # Initialize the network
 model = SimpleNet()
 
-# If multiple GPUs are available, wrap the model using DataParallel
-if num_gpus > 1:
-    model = nn.DataParallel(model)
+# # If multiple GPUs are available, wrap the model using DataParallel
+# if num_gpus > 1:
+#     model = nn.DataParallel(model)
 
 # Move the model to the appropriate device
 model.to(device)
