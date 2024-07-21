@@ -1,8 +1,10 @@
+# git clone https://github.com/HaithamAlhaji/GANCLIP.git
+# bash ./GANCLIP/code/scripts/init.sh
+
 conda create --name myenv python=3.9
 conda activate myenv
 
 pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
-git clone https://github.com/HaithamAlhaji/GANCLIP.git
 pip install -r GANCLIP/requirements.txt
 pip install git+https://github.com/openai/CLIP.git
 pip install setuptools==59.5.0
