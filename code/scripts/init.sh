@@ -1,12 +1,12 @@
-# git clone https://github.com/HaithamAlhaji/GANCLIP.git
+# git clone https://github.com/HaithamAlhaji/GANCLIP.git && cd GANCLIP/ && bash ./code/scripts/init.sh
 # cd GANCLIP/
 # bash ./code/scripts/init.sh
 
 # git fetch --all
 # git fetch --all && git reset --hard origin/main
 
-conda create --name myenv python=3.9 -y
-conda activate myenv
+# conda create --name myenv python=3.9 -y
+# conda activate myenv
 
 pip install torch==1.9.1+cu111 torchvision==0.10.1+cu111 torchaudio==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html
 pip install -r requirements.txt
