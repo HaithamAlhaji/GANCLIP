@@ -27,3 +27,5 @@ tar xvzf downloaded_files/birds.tgz -C data/birds
 python code/src/train.py --cfg code/cfg/birds.yml
 
 # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=11266 code/src/train.py --cfg code/cfg/birds.yml
+
+# CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1 --master_port=11266 code/src/train.py --cfg code/cfg/birds.yml
