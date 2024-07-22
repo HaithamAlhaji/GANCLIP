@@ -14,7 +14,7 @@ clip4text: {'src':"clip", 'type':'ViT-B/32'}
 
 stamp: 'normal'
 state_epoch: 0 # 0 OR 1 for resume training
-max_epoch: 2 # 1502 defaults
+max_epoch: 1502 # 1502 defaults
 batch_size: 96 # 96 OR 16
 gpu_id: 0
 nf: 64
@@ -27,7 +27,7 @@ lr_d: 0.0004
 sim_w: 4.0
 
 gen_interval: 1 #1
-test_interval: 1 #5
+test_interval: 5 #5
 save_interval: 1 #20
 
 sample_times: 12
