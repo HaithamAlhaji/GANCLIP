@@ -15,7 +15,7 @@ clip4text: {'src':"clip", 'type':'ViT-B/32'}
 stamp: 'normal'
 state_epoch: 0 # 0 OR 1 for resume training
 max_epoch: 1502 # 1502 defaults
-batch_size: 32 # 96 OR 16
+batch_size: 16 # 96 OR 16
 gpu_id: 0
 nf: 64
 ch_size: 3
@@ -34,9 +34,9 @@ sample_times: 12
 npz_path: 'data/birds/npz/bird_val256_FIDK0.npz'
 log_dir: 'new'
 
-multi_gpus: False
+multi_gpus: True
 model: GALIP
 num_workers: 4 # 4 OR 8
 local_rank: -1
-mixed_precision: False
+mixed_precision: True
 pretrained_model_path: code/saved_models/data/model_save_file
