@@ -1,4 +1,4 @@
-git clone https://github.com/HaithamAlhaji/GANCLIP.git && cd GANCLIP/ && bash ./code/scripts/init_server.sh
+# git clone https://github.com/HaithamAlhaji/GANCLIP.git && cd GANCLIP/ && bash ./code/scripts/init_server.sh
 
 
 
