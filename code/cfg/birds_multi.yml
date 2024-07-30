@@ -37,6 +37,7 @@ log_dir: 'new'
 multi_gpus: True
 model: GALIP
 num_workers: 4 # 4 OR 8
-local_rank: 0
+local_rank: -1
 mixed_precision: True
 pretrained_model_path: code/saved_models/data/model_save_file
+train: True

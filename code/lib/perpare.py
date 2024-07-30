@@ -43,6 +43,9 @@ def prepare_models(args):
     netG = NetG(args.nf, args.z_dim, args.cond_dim, args.imsize, args.ch_size, args.mixed_precision, CLIP4trn).to(device)
     netD = NetD(args.nf, args.imsize, args.ch_size, args.mixed_precision).to(device)
     netC = NetC(args.nf, args.cond_dim, args.mixed_precision).to(device)
+    print("ccccccccccc")
+    print(args.train)
+
     if (args.multi_gpus) and (args.train):
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         netG = torch.nn.parallel.DistributedDataParallel(netG, broadcast_buffers=False,

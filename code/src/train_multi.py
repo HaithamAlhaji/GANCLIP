@@ -31,7 +31,7 @@ from lib.datasets import get_fix_data
 def parse_args():
     # Training settings
     parser = argparse.ArgumentParser(description='Text2Img')
-    parser.add_argument('--cfg', dest='cfg_file', type=str, default='code\\cfg\\birds.yml',
+    parser.add_argument('--cfg', dest='cfg_file', type=str, default='code/cfg/birds_multi.yml',
                         help='optional config file')
     parser.add_argument('--num_workers', type=int, default=4, #8
                         help='number of workers(default: {0})'.format(mp.cpu_count() - 1))
@@ -83,9 +83,14 @@ def main(args):
         writer = None
     else:
         writer = SummaryWriter(log_dir)
+    
+    print("aaaaaaaa")
     # prepare dataloader, models, data
     train_dl, valid_dl ,train_ds, valid_ds, sampler = prepare_dataloaders(args)
+    print("111111")
     CLIP4trn, CLIP4evl, image_encoder, text_encoder, netG, netD, netC = prepare_models(args)
+    print("bbbbbbb")
+
     print('**************G_paras: ',params_count(netG))
     print('**************D_paras: ',params_count(netD)+params_count(netC))
 
