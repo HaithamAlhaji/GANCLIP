@@ -29,3 +29,5 @@ python code/src/train.py --cfg code/cfg/birds.yml
 # CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.launch --nproc_per_node=2 --master_port=11266 code/src/train.py --cfg code/cfg/birds.yml
 
 # CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=1 --master_port=11266 code/src/train.py --cfg code/cfg/birds.yml
+
+# CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -m torch.distributed.launch --nproc_per_node=8 --master_port=11266 code/src/train_multi.py --cfg code/cfg/birds_multi.yml
