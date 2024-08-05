@@ -17,7 +17,7 @@ state_epoch: 0 # 0 OR 1 for resume training
 max_epoch: 1502 # 1502 defaults
 batch_size: 64 # 96 OR 16
 gpu_id: 0
-nf: 64
+nf: 64 # Number of features.
 ch_size: 3
 
 scaler_min: 64
