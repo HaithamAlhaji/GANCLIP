@@ -37,7 +37,6 @@ def load_clip(clip_info, device):
     model = clip.load(clip_info['type'], device=device)[0]
     return model
 
-
 def prepare_models(args):
     """
     Prepares and initializes the models required for training, including CLIP models and GAN models.
@@ -108,7 +107,6 @@ def prepare_models(args):
                                                           output_device=local_rank, find_unused_parameters=True)
     return CLIP4trn, CLIP4evl, CLIP_img_enc, CLIP_txt_enc, netG, netD, netC
 
-
 def prepare_dataset(args, split, transform):
     if args.ch_size!=3:
         imsize = 256
@@ -125,7 +123,6 @@ def prepare_dataset(args, split, transform):
     from lib.datasets import TextImgDataset as Dataset
     dataset = Dataset(split=split, transform=image_transform, args=args)
     return dataset
-
 
 def prepare_datasets(args, transform):
     """
@@ -147,7 +144,6 @@ def prepare_datasets(args, transform):
     # test dataset
     val_dataset = prepare_dataset(args, split='test', transform=transform)
     return train_dataset, val_dataset
-
 
 def prepare_dataloaders(args, transform=None):
     """
