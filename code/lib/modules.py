@@ -29,6 +29,25 @@ import torch.distributed as dist
 
 ############   GAN   ############
 def train(dataloader, netG, netD, netC, text_encoder, image_encoder, optimizerG, optimizerD, scaler_G, scaler_D, args):
+    """
+    Trains the GAN model for one epoch.
+
+    Args:
+        dataloader (DataLoader): PyTorch DataLoader providing the training data.
+        netG (nn.Module): The generator network.
+        netD (nn.Module): The discriminator network.
+        netC (nn.Module): The auxiliary classifier network.
+        text_encoder (nn.Module): The text encoder network.
+        image_encoder (nn.Module): The image encoder network.
+        optimizerG (optim.Optimizer): The optimizer for the generator.
+        optimizerD (optim.Optimizer): The optimizer for the discriminator.
+        scaler_G (torch.cuda.amp.GradScaler): Gradient scaler for mixed precision training (generator).
+        scaler_D (torch.cuda.amp.GradScaler): Gradient scaler for mixed precision training (discriminator).
+        args (argparse.Namespace): Command line arguments and hyperparameters.
+
+    Returns:
+        None. The function trains the GAN for one epoch and updates the model parameters in place.
+    """
     batch_size = args.batch_size
     device = args.device
     epoch = args.current_epoch
@@ -113,11 +132,50 @@ def train(dataloader, netG, netD, netC, text_encoder, image_encoder, optimizerG,
 
 
 def test(dataloader, text_encoder, netG, PTM, device, m1, s1, epoch, max_epoch, times, z_dim, batch_size):
+    """
+    Evaluate the performance of the GAN using FID and CLIP similarity metrics.
+
+    Arguments:
+    dataloader (torch.utils.data.DataLoader): DataLoader for the dataset.
+    text_encoder (nn.Module): Model to encode text data.
+    netG (nn.Module): Generator network.
+    PTM (nn.Module): Pre-trained model for evaluation (e.g., CLIP).
+    device (torch.device): Device to run the computations on (e.g., 'cuda' or 'cpu').
+    m1 (np.ndarray): Mean vector of real images' features for FID calculation.
+    s1 (np.ndarray): Covariance matrix of real images' features for FID calculation.
+    epoch (int): Current epoch number.
+    max_epoch (int): Maximum number of epochs.
+    times (int): Number of times to iterate over the dataset for evaluation.
+    z_dim (int): Dimensionality of the noise vector for the generator.
+    batch_size (int): Number of samples per batch.
+
+    Returns:
+    tuple:
+        - FID (float): Frechet Inception Distance score between generated and real images.
+        - TI_sim (float): Average cosine similarity between generated images and their corresponding text embeddings.
+    """
     FID, TI_sim = calculate_FID_CLIP_sim(dataloader, text_encoder, netG, PTM, device, m1, s1, epoch, max_epoch, times, z_dim, batch_size)
     return FID, TI_sim
 
 
 def save_model(netG, netD, netC, optG, optD, epoch, multi_gpus, step, save_path):
+    """
+    Save the state of the models and optimizers to a file.
+
+    Arguments:
+    netG (nn.Module): Generator network.
+    netD (nn.Module): Discriminator network.
+    netC (nn.Module): Classifier network.
+    optG (torch.optim.Optimizer): Optimizer for the generator.
+    optD (torch.optim.Optimizer): Optimizer for the discriminator.
+    epoch (int): Current epoch number.
+    multi_gpus (bool): Flag indicating if multiple GPUs are being used.
+    step (int): Current training step.
+    save_path (str): Path to save the model state.
+
+    Returns:
+    None
+    """
     if (multi_gpus==True) and (get_rank() != 0):
         None
     else:
@@ -129,6 +187,18 @@ def save_model(netG, netD, netC, optG, optD, epoch, multi_gpus, step, save_path)
 
 #########   MAGP   ########
 def MA_GP_MP(img, sent, out, scaler):
+    """
+    Compute the Mixed-Precision Mode Magnitude-Adjusted Gradient Penalty (MA-GP).
+
+    Arguments:
+    img (torch.Tensor): The input images.
+    sent (torch.Tensor): The sentence embeddings corresponding to the images.
+    out (torch.Tensor): The output predictions from the discriminator.
+    scaler (torch.cuda.amp.GradScaler): The gradient scaler used for mixed-precision training.
+
+    Returns:
+    torch.Tensor: The computed gradient penalty.
+    """
     grads = torch.autograd.grad(outputs=scaler.scale(out),
                             inputs=(img, sent),
                             grad_outputs=torch.ones_like(out),
@@ -148,6 +218,17 @@ def MA_GP_MP(img, sent, out, scaler):
 
 
 def MA_GP_FP32(img, sent, out):
+    """
+    Compute the Full-Precision Mode Magnitude-Adjusted Gradient Penalty (MA-GP).
+
+    Arguments:
+    img (torch.Tensor): The input images.
+    sent (torch.Tensor): The sentence embeddings corresponding to the images.
+    out (torch.Tensor): The output predictions from the discriminator.
+
+    Returns:
+    torch.Tensor: The computed gradient penalty.
+    """
     grads = torch.autograd.grad(outputs=out,
                             inputs=(img, sent),
                             grad_outputs=torch.ones(out.size()).cuda(),
@@ -163,6 +244,22 @@ def MA_GP_FP32(img, sent, out):
 
 
 def sample(dataloader, netG, text_encoder, save_dir, device, multi_gpus, z_dim, stamp):
+    """
+    Generate and save samples from the generator network.
+
+    Arguments:
+    dataloader (torch.utils.data.DataLoader): DataLoader for fetching batches of real images and text data.
+    netG (torch.nn.Module): The generator network used to generate images.
+    text_encoder (torch.nn.Module): The text encoder used to process text inputs.
+    save_dir (str): Directory path where the generated images and captions will be saved.
+    device (torch.device): Device to which the tensors will be moved (e.g., 'cuda' or 'cpu').
+    multi_gpus (bool): Flag indicating if multi-GPU setup is used.
+    z_dim (int): Dimensionality of the noise vector used for generating images.
+    stamp (int): A timestamp or identifier for organizing output files.
+
+    Returns:
+    None: The function saves generated images and captions to disk and does not return any value.
+    """
     netG.eval()
     for step, data in enumerate(dataloader, 0):
         ######################################################
@@ -225,7 +322,26 @@ def sample(dataloader, netG, text_encoder, save_dir, device, multi_gpus, z_dim, 
 
 
 def calculate_FID_CLIP_sim(dataloader, text_encoder, netG, CLIP, device, m1, s1, epoch, max_epoch, times, z_dim, batch_size):
-    """ Calculates the FID """
+    """
+    Calculate the FID (Frechet Inception Distance) and CLIP similarity scores between real and fake images.
+
+    Arguments:
+    real_images (torch.Tensor): Tensor of real images with shape (N, C, H, W), where N is the number of images, 
+                                C is the number of channels (3 for RGB), H is the height, and W is the width.
+    fake_images (torch.Tensor): Tensor of fake images with shape (N, C, H, W), where N is the number of images, 
+                                C is the number of channels (3 for RGB), H is the height, and W is the width.
+    text_embeddings (torch.Tensor): Tensor of text embeddings with shape (N, D), where N is the number of images and 
+                                     D is the dimensionality of the text embeddings.
+    clip_model (torch.nn.Module): The CLIP model used to compute the similarity between image and text embeddings.
+    device (torch.device): Device to which the tensors will be moved (e.g., 'cuda' or 'cpu').
+
+    Returns:
+    tuple: A tuple containing:
+        - fid_score (float): The FID score between real and fake images, which measures the distance between
+                             the distributions of the real and fake images in feature space.
+        - clip_sim (float): The CLIP similarity score between real and fake images, which measures how well
+                            the generated images align with the text descriptions.
+    """
     clip_cos = torch.FloatTensor([0.0]).to(device)
     # prepare Inception V3
     dims = 2048
@@ -302,8 +418,22 @@ def calculate_FID_CLIP_sim(dataloader, text_encoder, netG, CLIP, device, m1, s1,
 
 
 def calc_clip_sim(clip, fake, caps_clip, device):
-    ''' calculate cosine similarity between fake and text features,
-    '''
+    """
+    Calculate the cosine similarity between the embeddings of fake images and text descriptions using a CLIP model.
+
+    Arguments:
+    clip_model (torch.nn.Module): The CLIP model used to encode images and text into embeddings.
+    fake_images (torch.Tensor): Tensor of fake images with shape (N, C, H, W), where N is the number of images, 
+                                C is the number of channels (3 for RGB), H is the height, and W is the width.
+    text_embeddings (torch.Tensor): Tensor of text embeddings with shape (N, D), where N is the number of images 
+                                     and D is the dimensionality of the text embeddings.
+    device (torch.device): Device to which the tensors will be moved (e.g., 'cuda' or 'cpu').
+
+    Returns:
+    torch.Tensor: A tensor of cosine similarities with shape (N,), where N is the number of images. Each value 
+                  represents the average cosine similarity between the embeddings of a fake image and its 
+                  corresponding text description.
+    """
     # Calculate features
     fake = transf_to_CLIP_input(fake)
     fake_features = clip.encode_image(fake)
@@ -313,6 +443,24 @@ def calc_clip_sim(clip, fake, caps_clip, device):
 
 
 def sample_one_batch(noise, sent, netG, multi_gpus, epoch, img_save_dir, writer):
+    """
+    Generate and save a batch of images from a given batch of noise and text captions.
+
+    Arguments:
+    noise (torch.Tensor): Tensor of shape (N, z_dim) representing the noise vectors used to generate images, 
+                          where N is the number of samples and z_dim is the dimensionality of the noise vector.
+    captions (torch.Tensor): Tensor of shape (N, D) representing text embeddings for each sample, where D is 
+                              the dimensionality of the text embeddings.
+    netG (torch.nn.Module): The generator model used to produce fake images from noise and text embeddings.
+    multi_gpus (bool): Flag indicating whether multiple GPUs are being used. If True, handles saving 
+                       images for different GPUs separately.
+    epoch (int): The current training epoch. Used to name the saved image file.
+    img_save_dir (str): Directory path where the generated images will be saved.
+    writer (torch.utils.tensorboard.SummaryWriter): TensorBoard writer instance for logging metrics (not used in this function).
+
+    Returns:
+    None
+    """
     if (multi_gpus==True) and (get_rank() != 0):
         None
     else:
@@ -330,18 +478,67 @@ def sample_one_batch(noise, sent, netG, multi_gpus, epoch, img_save_dir, writer)
 
 
 def generate_samples(noise, caption, model):
+    """
+    Generate images from noise vectors and text embeddings using a given model.
+
+    Arguments:
+    noise (torch.Tensor): Tensor of shape (N, z_dim) where N is the number of samples and z_dim is the dimensionality 
+                          of the noise vector. Each row represents a noise vector used as input to the generator.
+    captions (torch.Tensor): Tensor of shape (N, D) representing text embeddings for each sample, where D is the 
+                              dimensionality of the text embeddings. These embeddings guide the generation of images.
+    model (torch.nn.Module): The generator model used to produce images. It takes noise and text embeddings as input 
+                              and generates corresponding images.
+
+    Returns:
+    torch.Tensor: A tensor of shape (N, C, H, W) containing the generated images, where N is the number of samples, 
+                  C is the number of color channels (e.g., 3 for RGB), H is the height of the images, and W is the 
+                  width of the images.
+    """
     with torch.no_grad():
         fake = model(noise, caption, eval=True)
     return fake
 
 
 def predict_loss(predictor, img_feature, text_feature, negtive):
+    """
+    Compute the prediction and loss using a predictor model.
+
+    Arguments:
+    predictor (torch.nn.Module): The model used to predict the similarity or score between image features and text features.
+    img_feature (torch.Tensor): Tensor of image features extracted by the image encoder. It has shape (N, F), where N is 
+                                the number of samples and F is the feature dimensionality.
+    text_feature (torch.Tensor): Tensor of text features representing the text embeddings. It has shape (N, F) where N 
+                                  is the number of samples and F is the feature dimensionality.
+    negtive (bool): A boolean flag indicating whether to compute the loss for negative cases (i.e., when the features 
+                    do not match) or positive cases (i.e., when the features are expected to match).
+
+    Returns:
+    output (torch.Tensor): Tensor of shape (N, 1) containing the raw prediction scores from the predictor model for each 
+                           sample, where N is the number of samples.
+    err (torch.Tensor): Scalar tensor containing the computed loss value based on the prediction and whether the case is 
+                        positive or negative. The loss is computed using hinge loss if negtive is True, or using 
+                        the opposite hinge loss if negtive is False.
+    """
     output = predictor(img_feature, text_feature)
     err = hinge_loss(output, negtive)
     return output,err
 
 
 def hinge_loss(output, negtive):
+    """
+    Compute the hinge loss between the predictions and the target labels.
+
+    Arguments:
+    output (torch.Tensor): Tensor of shape (N, 1) containing the raw prediction scores from the model, where N is 
+                           the number of samples.
+    negtive (bool): A boolean flag indicating whether to compute the loss for negative cases (i.e., when the features 
+                    do not match) or positive cases (i.e., when the features are expected to match).
+
+    Returns:
+    torch.Tensor: Scalar tensor containing the computed hinge loss. The loss is computed as follows:
+        - For positive cases (negtive=False), the hinge loss is computed as `mean(max(0, 1 - output))`.
+        - For negative cases (negtive=True), the hinge loss is computed as `mean(max(0, 1 + output))`.
+    """
     if negtive==False:
         err = torch.mean(F.relu(1. - output))
     else:
@@ -350,6 +547,20 @@ def hinge_loss(output, negtive):
 
 
 def logit_loss(output, negtive):
+    """
+    Compute the binary cross-entropy (BCE) loss between the predicted probabilities and the target labels.
+
+    Arguments:
+    output (torch.Tensor): Tensor of shape (N, 1) containing the raw prediction scores from the model, where N is 
+                           the number of samples.
+    negtive (bool): A boolean flag indicating whether to compute the loss for positive cases (i.e., where the features 
+                    are expected to match) or negative cases (i.e., where the features do not match).
+
+    Returns:
+    torch.Tensor: Scalar tensor containing the computed binary cross-entropy loss. The loss is computed as follows:
+        - For positive cases (negtive=False), the loss is computed as `BCE(output, real_labels)`.
+        - For negative cases (negtive=True), the loss is computed as `BCE(output, fake_labels)`.
+    """
     batch_size = output.size(0)
     real_labels = torch.FloatTensor(batch_size,1).fill_(1).to(output.device)
     fake_labels = torch.FloatTensor(batch_size,1).fill_(0).to(output.device)
@@ -362,6 +573,22 @@ def logit_loss(output, negtive):
 
 
 def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
+    """
+    Calculate the Frechet Inception Distance (FID) between two distributions.
+
+    The FID measures the similarity between two distributions of images: one from the generated images and one from the real images.
+    It is used to evaluate the quality of generated images by comparing the feature distributions extracted from the Inception network.
+
+    Arguments:
+    mu1 (np.ndarray): Mean vector of the feature distribution for the real images.
+    sigma1 (np.ndarray): Covariance matrix of the feature distribution for the real images.
+    mu2 (np.ndarray): Mean vector of the feature distribution for the generated images.
+    sigma2 (np.ndarray): Covariance matrix of the feature distribution for the generated images.
+    eps (float, optional): A small value to avoid numerical instability when computing the square root of the covariance matrix product. Default is 1e-6.
+
+    Returns:
+    float: The Frechet Inception Distance between the two distributions. A lower FID indicates better quality of generated images.
+    """
     mu1 = np.atleast_1d(mu1)
     mu2 = np.atleast_1d(mu2)
 
