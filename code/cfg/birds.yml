@@ -34,9 +34,10 @@ sample_times: 12
 npz_path: 'data/birds/npz/bird_val256_FIDK0.npz'
 log_dir: 'new'
 
-multi_gpus: True
+multi_gpus: False
 model: GALIP
 num_workers: 4 # 4 OR 8
 local_rank: 0
-mixed_precision: True
+mixed_precision: False
 pretrained_model_path: code/saved_models/data/model_save_file
+train: True
