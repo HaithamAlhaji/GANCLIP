@@ -1,4 +1,4 @@
-####### 生成器，判别器未采用残差
+####### Generator, discriminator does not use residual
 import torch
 import torch.nn as nn
 import numpy as np
@@ -8,6 +8,10 @@ from lib.utils import dummy_context_mgr
 
 
 class CLIP_IMG_ENCODER(nn.Module):
+    """
+    CLIP_IMG_ENCODER is a module for encoding images using the CLIP visual model.
+    It processes images through various stages of the CLIP vision transformer and extracts features.
+    """
     def __init__(self, CLIP):
         super(CLIP_IMG_ENCODER, self).__init__()
         model = CLIP.visual
@@ -71,6 +75,10 @@ class CLIP_IMG_ENCODER(nn.Module):
 
 
 class CLIP_TXT_ENCODER(nn.Module):
+    """
+    CLIP_TXT_ENCODER is a module for encoding text using the CLIP text model.
+    It processes text input through the CLIP text transformer and extracts sentence embeddings.
+    """
     def __init__(self, CLIP):
         super(CLIP_TXT_ENCODER, self).__init__()
         self.define_module(CLIP)
@@ -104,6 +112,10 @@ class CLIP_TXT_ENCODER(nn.Module):
 
 
 class CLIP_Mapper(nn.Module):
+    """
+    CLIP_Mapper maps image features to CLIP's visual space using components from the CLIP model.
+    It processes images and text prompts to align their features in the CLIP space.
+    """
     def __init__(self, CLIP):
         super(CLIP_Mapper, self).__init__()
         model = CLIP.visual
@@ -152,6 +164,10 @@ class CLIP_Mapper(nn.Module):
 
 
 class CLIP_Adapter(nn.Module):
+    """
+    CLIP_Adapter adapts image features to the CLIP space by incorporating CLIP features and additional processing.
+    It uses convolutional blocks and a CLIP Mapper to combine and align visual and textual features.
+    """
     def __init__(self, in_ch, mid_ch, out_ch, G_ch, CLIP_ch, cond_dim, k, s, p, map_num, CLIP):
         super(CLIP_Adapter, self).__init__()
         self.CLIP_ch = CLIP_ch
@@ -175,6 +191,10 @@ class CLIP_Adapter(nn.Module):
 
 
 class NetG(nn.Module):
+    """
+    NetG is the generator network in the GAN architecture. It generates images based on noise and conditional input,
+    incorporating features from CLIP and various convolutional blocks to produce high-quality images.
+    """
     def __init__(self, ngf, nz, cond_dim, imsize, ch_size, mixed_precision, CLIP):
         super(NetG, self).__init__()
         self.ngf = ngf
@@ -213,8 +233,12 @@ class NetG(nn.Module):
         return out
 
 
-# 定义鉴别器网络D
+# Discriminator Network D
 class NetD(nn.Module):
+    """
+    NetD is the discriminator network in the GAN architecture. It differentiates between real and generated images
+    by processing input images and their associated features through multiple convolutional blocks.
+    """
     def __init__(self, ndf, imsize, ch_size, mixed_precision):
         super(NetD, self).__init__()
         self.mixed_precision = mixed_precision
@@ -234,6 +258,10 @@ class NetD(nn.Module):
 
 
 class NetC(nn.Module):
+    """
+    NetC is a conditional network used to predict additional properties or features from the generated images and their conditions.
+    It processes the combined output of a discriminator and a condition vector to produce a final score or feature map.
+    """
     def __init__(self, ndf, cond_dim, mixed_precision):
         super(NetC, self).__init__()
         self.cond_dim = cond_dim
@@ -254,6 +282,11 @@ class NetC(nn.Module):
 
 
 class M_Block(nn.Module):
+    """
+    M_Block is a modular building block used in the generator network. It applies a series of convolutional layers,
+    normalization, and conditioning to process input features and generate residuals for the output.
+    It includes a shortcut connection to enable residual learning.
+    """
     def __init__(self, in_ch, mid_ch, out_ch, cond_dim, k, s, p):
         super(M_Block, self).__init__()
         self.conv1 = nn.Conv2d(in_ch, mid_ch, k, s, p)
@@ -281,6 +314,11 @@ class M_Block(nn.Module):
 
 
 class G_Block(nn.Module):
+    """
+    G_Block is a modular building block used in the generator network of a GAN. It performs a series of convolutions
+    and feature conditioning to process and refine input features. It includes a shortcut connection to enable residual learning
+    and can adjust the spatial resolution of the features.
+    """
     def __init__(self, cond_dim, in_ch, out_ch, imsize):
         super(G_Block, self).__init__()
         self.imsize = imsize
@@ -310,6 +348,14 @@ class G_Block(nn.Module):
 
 
 class D_Block(nn.Module):
+    """
+    D_Block is a modular building block used in the discriminator network of a GAN. It performs a series of convolutions
+    to extract features from the input and applies optional residual and conditional feature enhancement.
+
+    Attributes:
+    res (bool): Indicates whether to use residual connections.
+    CLIP_feat (bool): Indicates whether to include CLIP features in the output.
+    """
     def __init__(self, fin, fout, k, s, p, res, CLIP_feat):
         super(D_Block, self).__init__()
         self.res, self.CLIP_feat = res, CLIP_feat
@@ -341,6 +387,13 @@ class D_Block(nn.Module):
 
 
 class DFBLK(nn.Module):
+    """
+    DFBLK (Discriminator Feature Block) is a feature extraction block used in the discriminator network of a GAN.
+    It performs convolutional operations to extract hierarchical features from input images for discrimination tasks.
+
+    Attributes:
+    conv (nn.Sequential): Sequential container for convolutional layers.
+    """
     def __init__(self, cond_dim, in_ch):
         super(DFBLK, self).__init__()
         self.affine0 = Affine(cond_dim, in_ch)
@@ -355,11 +408,30 @@ class DFBLK(nn.Module):
 
 
 class QuickGELU(nn.Module):
+    """
+    QuickGELU is a fast approximation of the Gaussian Error Linear Unit (GELU) activation function.
+    GELU is known for its smooth and non-linear characteristics, making it popular in transformer models.
+
+    Methods:
+    forward(x: torch.Tensor) -> torch.Tensor: Applies the QuickGELU activation function to the input tensor.
+    """
     def forward(self, x: torch.Tensor):
         return x * torch.sigmoid(1.702 * x)
 
 
 class Affine(nn.Module):
+    """
+    Affine is a layer that applies an affine transformation to its input, 
+    conditioned on some additional input (often referred to as "conditioning vector" or "style vector").
+    This is commonly used in adaptive instance normalization and other style-based networks.
+
+    Attributes:
+    fc_gamma (nn.Sequential): A fully connected network to predict the scaling factor (gamma) from the conditioning input.
+    fc_beta (nn.Sequential): A fully connected network to predict the shifting factor (beta) from the conditioning input.
+
+    Methods:
+    forward(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor: Applies the affine transformation to the input tensor.
+    """
     def __init__(self, cond_dim, num_features):
         super(Affine, self).__init__()
 
@@ -409,4 +481,3 @@ def get_D_in_out_chs(nf, imsize):
     channel_nums = [nf*min(2**idx, 8) for idx in range(layer_num)]
     in_out_pairs = zip(channel_nums[:-1], channel_nums[1:])
     return in_out_pairs
-    
